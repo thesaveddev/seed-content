@@ -262,6 +262,7 @@ const scheduledPostSchema = new Schema({
   notes: { type: String, default: '' },
   publishedAt: { type: Date },
   errorMessage: String,
+  externalUrl: String,
 }, { timestamps: true });
 
 export const ScheduledPost = wrapMethods('ScheduledPost', scheduledPostSchema);

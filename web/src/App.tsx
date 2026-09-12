@@ -15,6 +15,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Public pages
 import LandingPage from './pages/LandingPage';
+import LegalPage from './pages/LegalPage';
 
 // App pages
 import DashboardPage from './pages/DashboardPage';
@@ -98,6 +99,9 @@ export default function App() {
         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
         <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        <Route path="/privacy" element={<LegalPage type="privacy" />} />
+        <Route path="/terms" element={<LegalPage type="terms" />} />
 
         <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
 

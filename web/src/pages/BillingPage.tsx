@@ -389,7 +389,7 @@ export default function BillingPage() {
                 </h3>
                 <div style={{ marginBottom: '1rem' }}>
                   <span style={{ fontSize: '1.75rem', fontFamily: 'var(--font-display)', fontWeight: 700 }}>
-                    {plan.price === 0 ? 'Free' : `£${plan.price}`}
+                    {plan.price === 0 ? 'Free' : `$${plan.price}`}
                   </span>
                   {plan.price > 0 && (
                     <span style={{ fontSize: '0.8125rem', color: 'var(--color-muted)' }}>/mo</span>

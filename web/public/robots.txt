@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /create
+Disallow: /library
+Disallow: /content/
+Disallow: /settings
+Disallow: /billing
+Disallow: /integrations
+Disallow: /calendar
+Disallow: /team
+Disallow: /onboarding
+Disallow: /ideas
+Disallow: /campaigns
+Disallow: /brand-voice
+
+Sitemap: /sitemap.xml

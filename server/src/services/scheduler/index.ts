@@ -1,14 +1,13 @@
-import { ScheduledPost, GeneratedContent, Notification, ContentProject } from '../../models';
+import { ScheduledPost } from '../../models';
+import { publishScheduledPost } from '../publisher';
 
 /**
- * Scheduled-post publisher.
+ * Scheduled-post publisher loop.
  *
- * Periodically finds posts whose `scheduledAt` time has arrived and moves
- * them through the publish lifecycle.  Without platform OAuth (launch
- * state), "publishing" means marking the post published and notifying the
- * creator — the content is ready to copy/paste.  When a platform
- * integration with real posting capability is connected, the actual API
- * call happens here.
+ * Periodically finds posts whose `scheduledAt` time has arrived and hands
+ * each to the publishing service, which performs the real platform call
+ * (Telegram works end-to-end today; other platforms validate the account
+ * and notify the creator with ready-to-paste content).
  *
  * Design notes:
  * - Marks posts in-flight first so overlapping ticks never double-publish.
@@ -18,51 +17,6 @@ import { ScheduledPost, GeneratedContent, Notification, ContentProject } from '.
 
 const TICK_MS = 60 * 1000; // check once a minute
 const BATCH = 50;
-
-function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
-async function publishOne(post: any): Promise<void> {
-  const gc = await GeneratedContent.findById(post.generatedContentId);
-
-  if (!gc) {
-    await ScheduledPost.findByIdAndUpdate(post._id, {
-      status: 'failed',
-      errorMessage: 'Generated content no longer exists',
-    });
-    return;
-  }
-
-  // ── Actual publish step ──
-  // TODO(launch+): when a platform integration supports posting
-  // (e.g. LinkedIn UGC posts API), perform the API call here using the
-  // integration's stored credentials.  Until then the "publish" is a
-  // hand-off: mark published + notify the creator that the post is due.
-  await ScheduledPost.findByIdAndUpdate(post._id, {
-    status: 'published',
-    publishedAt: new Date(),
-  });
-
-  // Notify the creator that their post is due for publishing
-  // ScheduledPost has no createdBy — resolve the owner via the project.
-  try {
-    const project = await ContentProject.findById(post.projectId);
-    if (project) {
-      await Notification.create({
-        userId: String(project.createdBy),
-        workspaceId: String(project.workspaceId),
-        type: 'info',
-        title: `Post due: ${post.platform}`,
-        message: `Your ${post.platform} post is due now. Open the content pack to copy it into ${post.platform}.`,
-        projectId: String(post.projectId),
-        read: false,
-      });
-    }
-  } catch {
-    // Notification is best-effort — never fail the publish over it
-  }
-}
 
 export class ScheduledPostPublisher {
   private timer: ReturnType<typeof setInterval> | null = null;
@@ -104,7 +58,7 @@ export class ScheduledPostPublisher {
           );
           if (!claimed) continue;
 
-          await publishOne(claimed);
+          await publishScheduledPost(claimed);
         } catch (err: any) {
           await ScheduledPost.findByIdAndUpdate(post._id, {
             status: 'failed',

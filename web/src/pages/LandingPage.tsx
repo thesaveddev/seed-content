@@ -36,10 +36,10 @@ const faqs = [
 ];
 
 const plans = [
-  { name: 'Free', price: '£0', features: ['3 projects/month', '3 platforms', '1 brand voice'] },
-  { name: 'Creator', price: '£9/mo', features: ['30 projects/month', 'All platforms', '3 brand voices', '10 campaigns'], popular: true },
-  { name: 'Pro', price: '£19/mo', features: ['100 projects/month', 'All platforms', '10 brand voices', '50 campaigns'] },
-  { name: 'Agency', price: '£59/mo', features: ['500 projects/month', 'Unlimited everything', 'Multiple workspaces'] },
+  { name: 'Free', price: '$0', features: ['3 projects/month', '3 platforms', '1 brand voice'] },
+  { name: 'Creator', price: '$9/mo', features: ['30 projects/month', 'All platforms', '3 brand voices', '10 campaigns'], popular: true },
+  { name: 'Pro', price: '$19/mo', features: ['100 projects/month', 'All platforms', '10 brand voices', '50 campaigns'] },
+  { name: 'Agency', price: '$59/mo', features: ['500 projects/month', 'Unlimited everything', 'Multiple workspaces'] },
 ];
 
 export default function LandingPage() {
@@ -377,6 +377,22 @@ export default function LandingPage() {
           >
             Seed
           </span>
+          <div className="flex items-center gap-6">
+            <Link
+              to="/privacy"
+              className="text-xs font-medium transition-colors hover:underline"
+              style={{ color: 'var(--color-muted)' }}
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              to="/terms"
+              className="text-xs font-medium transition-colors hover:underline"
+              style={{ color: 'var(--color-muted)' }}
+            >
+              Terms of Service
+            </Link>
+          </div>
           <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
             © 2026 Seed. All rights reserved.
           </p>

@@ -135,6 +135,7 @@ export interface Integration {
   provider: string;
   status: 'connected' | 'disconnected' | 'error';
   metadata: Record<string, any>;
+  credentialSummary?: Record<string, string>;
   createdAt: string;
   updatedAt: string;
 }

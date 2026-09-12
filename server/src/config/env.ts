@@ -25,6 +25,7 @@ const envSchema = z.object({
   STRIPE_PRICE_PRO: opt(z.string()).optional(),
   STRIPE_PRICE_AGENCY: opt(z.string()).optional(),
   TELEGRAM_BOT_TOKEN: opt(z.string()).optional(),
+  ENCRYPTION_KEY: opt(z.string()).optional(),
   RATE_LIMIT_WINDOW_MS: opt(z.coerce.number()).default(900000),
   RATE_LIMIT_MAX_REQUESTS: opt(z.coerce.number()).default(600),
   RABBITMQ_URL: opt(z.string()).default('amqp://guest:guest@localhost:5672'),
