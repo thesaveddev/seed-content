@@ -71,6 +71,9 @@ async function publishToTelegram(text: string, creds: Record<string, string>): P
 }
 
 // ── LinkedIn / X / Instagram: validate-only at publish time ──────
+// Auto-publishing for these platforms needs per-platform developer apps,
+// OAuth, and API approval. See docs/auto-publishing-roadmap.md for the
+// full requirements and sequencing per platform.
 
 function validateOnlyMessage(platform: string): PublishResult {
   return {
