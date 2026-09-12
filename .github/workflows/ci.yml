@@ -13,6 +13,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug — inspect checkout
+        run: |
+          echo "--- pwd ---"; pwd
+          echo "--- root ls ---"; ls -la
+          echo "--- server ls ---"; ls -la server/ || echo "server/ MISSING"
+          echo "--- lockfile head ---"; head -5 server/package-lock.json 2>/dev/null || echo "no lockfile"
+          echo "--- git status ---"; git status --short | head -5
+          echo "--- git ls-files server ---"; git ls-files server/ | head -10
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
