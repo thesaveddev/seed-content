@@ -23,6 +23,7 @@ import notificationRoutes from './routes/notifications';
 import settingsRoutes from './routes/settings';
 import schedulerRoutes from './routes/scheduler';
 import teamRoutes from './routes/team';
+import adminRoutes from './routes/admin';
 import { sseHandler } from './routes/events';
 
 /**
@@ -148,6 +149,7 @@ export function createApp(): express.Express {
   app.use('/api/settings', settingsRoutes);
   app.use('/api/scheduler', schedulerRoutes);
   app.use('/api/team', teamRoutes);
+  app.use('/api/admin', adminRoutes);
 
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

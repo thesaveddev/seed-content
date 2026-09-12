@@ -3,12 +3,19 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import {
   LayoutDashboard, Plus, FolderOpen, Mic2, Lightbulb,
-  Megaphone, Link2, Settings, CreditCard, LogOut, Menu, X,  CalendarDays, Users
+  Megaphone, Link2, Settings, CreditCard, LogOut, Menu, X, CalendarDays, Users, ShieldCheck
 } from 'lucide-react';
 import NotificationBell from '../ui/NotificationBell';
 import ThemeToggle from '../ui/ThemeToggle';
 
-const navItems = [
+interface NavItem {
+  to: string;
+  icon: typeof LayoutDashboard;
+  label: string;
+  matchPaths?: string[];
+}
+
+const baseNavItems: NavItem[] = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/create', icon: Plus, label: 'Create' },
   { to: '/library', icon: FolderOpen, label: 'Content Library', matchPaths: ['/library', '/content'] },
@@ -18,12 +25,18 @@ const navItems = [
   { to: '/team', icon: Users, label: 'Team' },
   { to: '/campaigns', icon: Megaphone, label: 'Campaigns' },
   { to: '/integrations', icon: Link2, label: 'Integrations' },
+];
+
+const tailNavItems: NavItem[] = [
   { to: '/settings', icon: Settings, label: 'Settings' },
   { to: '/billing', icon: CreditCard, label: 'Billing' },
 ];
 
 export default function AppLayout() {
   const { user, workspace, logout } = useAuthStore();
+  const navItems: NavItem[] = user?.isAdmin
+    ? [...baseNavItems, { to: '/admin', icon: ShieldCheck, label: 'Admin' }, ...tailNavItems]
+    : [...baseNavItems, ...tailNavItems];
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);

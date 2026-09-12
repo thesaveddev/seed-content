@@ -4,6 +4,7 @@ export interface AuthRequest extends Request {
   userId?: string;
   workspaceId?: string;
   userRole?: string;
+  isAdmin?: boolean;
 }
 
 export interface ApiResponse<T = any> {

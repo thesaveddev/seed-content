@@ -237,3 +237,29 @@ export const settings = {
   changePassword: (currentPassword: string, newPassword: string) =>
     request<any>('/settings/password', { method: 'PUT', body: JSON.stringify({ currentPassword, newPassword }) }),
 };
+
+// Admin (platform administration — server enforces isAdmin on every call)
+export const adminApi = {
+  overview: () => request<any>('/admin/overview'),
+  users: (params: { page?: number; limit?: number; search?: string; status?: string } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.page) qs.set('page', String(params.page));
+    if (params.limit) qs.set('limit', String(params.limit));
+    if (params.search) qs.set('search', params.search);
+    if (params.status) qs.set('status', params.status);
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    return request<any>(`/admin/users${suffix}`);
+  },
+  userDetail: (id: string) => request<any>(`/admin/users/${id}`),
+  setStatus: (id: string, status: 'active' | 'disabled') =>
+    request<any>(`/admin/users/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  setAdmin: (id: string, isAdmin: boolean) =>
+    request<any>(`/admin/users/${id}/admin`, { method: 'PUT', body: JSON.stringify({ isAdmin }) }),
+  workspaces: (params: { page?: number; limit?: number } = {}) => {
+    const qs = new URLSearchParams();
+    if (params.page) qs.set('page', String(params.page));
+    if (params.limit) qs.set('limit', String(params.limit));
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    return request<any>(`/admin/workspaces${suffix}`);
+  },
+};

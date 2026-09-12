@@ -30,6 +30,7 @@ import BillingPage from './pages/BillingPage';
 import IntegrationsPage from './pages/IntegrationsPage';
 import CalendarPage from './pages/CalendarPage';
 import TeamPage from './pages/TeamPage';
+import AdminPage from './pages/AdminPage';
 import OnboardingPage from './pages/OnboardingPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -118,6 +119,7 @@ export default function App() {
           <Route path="integrations" element={<IntegrationsPage />} />
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="team" element={<TeamPage />} />
+          <Route path="admin" element={<AdminPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

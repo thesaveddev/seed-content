@@ -132,6 +132,9 @@ const userSchema = new Schema({
   openaiApiKey: { type: String, select: false },
   resetPasswordToken: { type: String, select: false },
   resetPasswordExpires: { type: Date, select: false },
+  // Platform administration
+  isAdmin: { type: Boolean, default: false, select: false },
+  status: { type: String, enum: ['active', 'disabled'], default: 'active' },
 }, { timestamps: true });
 
 const workspaceSchema = new Schema({

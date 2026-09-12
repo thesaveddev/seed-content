@@ -88,7 +88,7 @@ router.post('/login', validate(loginSchema), async (req: AuthRequest, res: Respo
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email }).select('+passwordHash');
+    const user = await User.findOne({ email }).select('+passwordHash +isAdmin');
     if (!user) {
       res.status(401).json({ success: false, error: 'Invalid email or password' });
       return;
@@ -100,6 +100,12 @@ router.post('/login', validate(loginSchema), async (req: AuthRequest, res: Respo
       return;
     }
 
+    // Disabled accounts cannot log in
+    if ((user as any).status === 'disabled') {
+      res.status(403).json({ success: false, error: 'This account has been disabled. Contact support.' });
+      return;
+    }
+
     // Get user's workspace — resolve directly to work with both real and in-memory DB
     const membership = await WorkspaceMember.findOne({ userId: user._id });
     const workspaceId = membership?.workspaceId as any;
@@ -107,7 +113,8 @@ router.post('/login', validate(loginSchema), async (req: AuthRequest, res: Respo
 
     const token = generateToken(
       user._id.toString(),
-      workspace?._id?.toString()
+      workspace?._id?.toString(),
+      !!(user as any).isAdmin
     );
 
     res.cookie('token', token, {
@@ -124,6 +131,7 @@ router.post('/login', validate(loginSchema), async (req: AuthRequest, res: Respo
           id: user._id,
           email: user.email,
           name: user.name,
+          isAdmin: !!(user as any).isAdmin,
           onboardingCompleted: user.onboardingCompleted,
           onboardingData: user.onboardingData,
         },
@@ -145,7 +153,7 @@ router.post('/logout', (_req: AuthRequest, res: Response) => {
 // GET /api/auth/me
 router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId).select('+isAdmin');
     if (!user) {
       res.status(404).json({ success: false, error: 'User not found' });
       return;
@@ -163,6 +171,7 @@ router.get('/me', authenticate, async (req: AuthRequest, res: Response) => {
           email: user.email,
           name: user.name,
           avatar: user.avatar,
+          isAdmin: !!(user as any).isAdmin,
           onboardingCompleted: user.onboardingCompleted,
           onboardingData: user.onboardingData,
         },

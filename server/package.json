@@ -10,7 +10,8 @@
     "worker:dev": "tsx watch src/workers/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "bootstrap:admin": "tsx src/scripts/bootstrapAdmin.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
