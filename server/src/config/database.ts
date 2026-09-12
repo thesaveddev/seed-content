@@ -164,6 +164,14 @@ let useInMemory = false;
 
 export async function connectDatabase(): Promise<void> {
   if (isConnected) return;
+
+  // Tests are hermetic: never touch a real MongoDB, always use the in-memory store.
+  if (config.NODE_ENV === 'test') {
+    useInMemory = true;
+    isConnected = true;
+    return;
+  }
+
   try {
     await mongoose.connect(config.MONGODB_URI);
     isConnected = true;

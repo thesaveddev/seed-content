@@ -94,7 +94,10 @@ function wrapMethods(collName: string, schema: any) {
 
   let mongooseModel: any = null;
   function realModel() {
-    if (!mongooseModel) mongooseModel = mongoose.model(collName, schema);
+    if (!mongooseModel) {
+      // Reuse an already-compiled model (module re-imports in tests / hot reload)
+      mongooseModel = (mongoose as any).models[collName] || mongoose.model(collName, schema);
+    }
     return mongooseModel;
   }
 

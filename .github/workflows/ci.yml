@@ -25,6 +25,9 @@ jobs:
       - name: Typecheck
         run: cd server && npm run typecheck
 
+      - name: Test
+        run: cd server && npm test
+
       - name: Build
         run: cd server && npm run build
 

@@ -73,6 +73,12 @@ async function useInProcessQueue(processor?: ContentJobProcessor): Promise<void>
 }
 
 export async function initQueue(processor?: ContentJobProcessor): Promise<void> {
+  // Tests must be hermetic and deterministic — never depend on an external
+  // Redis that may or may not be running on the machine.
+  if (config.NODE_ENV === 'test') {
+    await useInProcessQueue(processor);
+    return;
+  }
   const redisAvailable = await tryRedis(processor);
   if (!redisAvailable) {
     await useInProcessQueue(processor);
