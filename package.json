@@ -2,10 +2,6 @@
   "name": "seed",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "server",
-    "web"
-  ],
   "scripts": {
     "dev": "concurrently -n api,web -c blue,green \"npm run dev:server\" \"npm run dev:web\"",
     "dev:server": "cd server && npm run dev",
