@@ -42,7 +42,7 @@ class MockTranscriptionProvider implements TranscriptionProvider {
 }
 
 // OpenAI Whisper provider
-class WhisperTranscriptionProvider implements TranscriptionProvider {
+export class WhisperTranscriptionProvider implements TranscriptionProvider {
   async transcribe(input: TranscriptionInput): Promise<TranscriptionResult> {
     const { default: OpenAI } = await import('openai');
     const openai = new OpenAI({ apiKey: config.OPENAI_API_KEY });

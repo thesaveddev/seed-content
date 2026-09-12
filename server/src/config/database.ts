@@ -40,7 +40,10 @@ class InMemoryCollection {
     const doc = await this.findOne(query);
     if (!doc && !options.upsert) return null;
     if (doc) {
-      const updated = { ...doc, ...this.applyUpdate(doc, update), updatedAt: new Date() };
+      // applyUpdate copies the doc and applies operators in place, so $unset
+      // genuinely removes keys (a { ...doc, ...result } spread would re-add them).
+      const updated = this.applyUpdate(doc, update);
+      updated.updatedAt = new Date();
       this.data.set(doc._id, updated);
       return options.new ? this.hydrate(updated) : this.hydrate(doc);
     }
@@ -68,7 +71,12 @@ class InMemoryCollection {
   async updateMany(query: Record<string, any>, update: Record<string, any>): Promise<{ modifiedCount: number }> {
     let count = 0;
     for (const [id, doc] of this.data.entries()) {
-      if (this.matches(doc, query)) { this.data.set(id, { ...doc, ...this.applyUpdate(doc, update), updatedAt: new Date() }); count++; }
+      if (this.matches(doc, query)) {
+        const updated = this.applyUpdate(doc, update);
+        updated.updatedAt = new Date();
+        this.data.set(id, updated);
+        count++;
+      }
     }
     return { modifiedCount: count };
   }
@@ -144,16 +152,65 @@ class InMemoryCollection {
   }
 
   private applyUpdate(doc: Record<string, any>, update: Record<string, any>): Record<string, any> {
+    // Copies the doc and applies operators in place, so $unset genuinely
+    // removes keys (a { ...doc, ...result } spread would re-add them).
+    // Dotted keys ('metadata.lastWarnedKey') write/delete nested paths like
+    // MongoDB instead of creating literal dotted property names.
     const result = { ...doc };
-    if (update.$set) Object.assign(result, update.$set);
-    if (update.$unset) { for (const key of Object.keys(update.$unset)) delete result[key]; }
-    if (update.$inc) { for (const [key, val] of Object.entries(update.$inc)) result[key] = (result[key] || 0) + (val as number); }
-    if (!update.$set && !update.$unset && !update.$inc && !update.$push) Object.assign(result, update);
+    const applyPatch = (patch: Record<string, any>, isUnset = false) => {
+      for (const [key, val] of Object.entries(patch)) {
+        if (isUnset) deletePath(result, key);
+        else setPath(result, key, val);
+      }
+    };
+    if (update.$set) applyPatch(update.$set);
+    if (update.$unset) applyPatch(update.$unset, true);
+    if (update.$inc) {
+      for (const [key, val] of Object.entries(update.$inc)) {
+        setPath(result, key, (getPath(result, key) || 0) + (val as number));
+      }
+    }
+    if (update.$push) {
+      for (const [key, val] of Object.entries(update.$push)) {
+        const arr = getPath(result, key);
+        setPath(result, key, Array.isArray(arr) ? [...arr, val] : [val]);
+      }
+    }
+    if (!update.$set && !update.$unset && !update.$inc && !update.$push) applyPatch(update);
     return result;
   }
 }
 
 const collections: Map<string, InMemoryCollection> = new Map();
+
+function setPath(obj: Record<string, any>, path: string, value: any): void {
+  const parts = path.split('.');
+  let cur: any = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (typeof cur[parts[i]] !== 'object' || cur[parts[i]] === null) cur[parts[i]] = {};
+    cur = cur[parts[i]];
+  }
+  cur[parts[parts.length - 1]] = value;
+}
+
+function getPath(obj: Record<string, any>, path: string): any {
+  let cur: any = obj;
+  for (const part of path.split('.')) {
+    if (cur == null) return undefined;
+    cur = cur[part];
+  }
+  return cur;
+}
+
+function deletePath(obj: Record<string, any>, path: string): void {
+  const parts = path.split('.');
+  let cur: any = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (cur[parts[i]] == null) return;
+    cur = cur[parts[i]];
+  }
+  delete cur[parts[parts.length - 1]];
+}
 
 export function getCollection(name: string): InMemoryCollection {
   if (!collections.has(name)) collections.set(name, new InMemoryCollection());

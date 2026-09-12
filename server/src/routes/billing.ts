@@ -339,7 +339,13 @@ router.post('/webhooks', async (req: Request, res: Response) => {
 
   let event: any;
   try {
-    const payload = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+    // express.raw delivers a Buffer — pass it through untouched (JSON.stringify
+    // would corrupt the exact bytes the signature covers)
+    const payload = Buffer.isBuffer(req.body)
+      ? req.body.toString('utf8')
+      : typeof req.body === 'string'
+        ? req.body
+        : JSON.stringify(req.body);
     event = stripe.webhooks.constructEvent(payload, sig, config.STRIPE_WEBHOOK_SECRET);
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message);

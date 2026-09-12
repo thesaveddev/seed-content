@@ -53,6 +53,7 @@ const envSchema = z.object({
 
 const parsed = envSchema.safeParse(process.env);
 
+/* v8 ignore next 6 -- fatal boot path: a bad env kills the process, never reachable with the committed test env */
 if (!parsed.success) {
   console.error('❌ Invalid environment variables:');
   console.error(parsed.error.flatten().fieldErrors);
@@ -61,6 +62,7 @@ if (!parsed.success) {
 
 // ── Production safety checks ─────────────────────────────────────
 // Fail fast at startup rather than running insecurely in production.
+/* v8 ignore next 32 -- runs only when NODE_ENV=production at boot; the test env never imports this file in production mode */
 if (parsed.data.NODE_ENV === 'production') {
   const fatal: string[] = [];
   const warnings: string[] = [];

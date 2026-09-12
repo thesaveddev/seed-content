@@ -100,7 +100,9 @@ export class ScheduledPostPublisher {
       const soon = new Date(Date.now() + EXPIRY_WARN_DAYS * 24 * 60 * 60 * 1000);
       const { Notification } = await import('../../models');
 
-      const all = await Integration.find({ status: 'connected' });
+      // Connected integrations can have expiring tokens; errored ones carry a
+      // refresh failure that also needs a reconnect nudge.
+      const all = await Integration.find({ status: { $in: ['connected', 'error'] } });
       for (const integration of all) {
         const creds = decryptCredentials(integration.credentials || {});
         const expiresAt = creds.expiresAt ? Date.parse(creds.expiresAt) : NaN;

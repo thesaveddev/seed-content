@@ -53,3 +53,11 @@ export function getStripe() {
 export function isStripeConfigured() {
   return !!getStripe();
 }
+
+/**
+ * Test seam: inject or clear the Stripe singleton.
+ * Passing null restores unconfigured behaviour.
+ */
+export function __setStripeForTests(instance: any) {
+  _stripe = instance;
+}

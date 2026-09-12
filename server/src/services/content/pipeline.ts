@@ -6,7 +6,7 @@ import { notifyStatusChange } from '../../routes/events';
 import type { Platform } from '../../types';
 
 export class ContentPipeline {
-  async processProject(projectId: string): Promise<void> {
+  async processProject(projectId: string, overridePlatforms?: string[]): Promise<void> {
     const project = await ContentProject.findById(projectId);
     if (!project) throw new Error('Project not found');
 
@@ -22,7 +22,7 @@ export class ContentPipeline {
       await this.analyse(project, userId);
 
       // Step 3: Generate content for each platform
-      await this.generate(project, userId);
+      await this.generate(project, userId, overridePlatforms);
 
       // Step 4: Quality check
       await this.qualityCheck(project, userId);
@@ -101,7 +101,7 @@ export class ContentPipeline {
     await project.save();
   }
 
-  private async generate(project: any, userId: string): Promise<void> {
+  private async generate(project: any, userId: string, overridePlatforms?: string[]): Promise<void> {
     project.status = 'generating';
     await project.save();
     notifyStatusChange(project._id.toString(), 'generating');
@@ -114,13 +114,17 @@ export class ContentPipeline {
       const brandVoice = await BrandVoice.findById(project.brandVoiceId);
       if (brandVoice) {
         brandVoiceText = `${brandVoice.description}\nTone: ${brandVoice.tone.join(', ')}\nAudience: ${brandVoice.audience}\nAvoid: ${brandVoice.avoidWords.join(', ')}\nPreferred: ${brandVoice.preferredWords.join(', ')}`;
-        if (brandVoice.samples.length > 0) {
+        if (Array.isArray(brandVoice.samples) && brandVoice.samples.length > 0) {
           brandVoiceText += `\n\nWriting samples:\n${brandVoice.samples.join('\n---\n')}`;
         }
       }
     }
 
-    const platforms = project.selectedPlatforms as Platform[];
+    // A single-platform regenerate passes an override so only that platform
+    // is regenerated (the stored selectedPlatforms would regenerate all).
+    const platforms = (overridePlatforms && overridePlatforms.length > 0
+      ? overridePlatforms
+      : project.selectedPlatforms) as Platform[];
 
     for (const platform of platforms) {
       try {

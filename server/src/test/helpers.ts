@@ -14,7 +14,7 @@ const { initQueue } = await import('../services/queue');
 const { contentPipeline } = await import('../services/content/pipeline');
 await initQueue(async (data) => {
   try {
-    await contentPipeline.processProject(data.projectId);
+    await contentPipeline.processProject(data.projectId, data.selectedPlatforms);
   } catch (err: any) {
     console.error(`[test] pipeline failed for project ${data.projectId}:`, err.message);
   }

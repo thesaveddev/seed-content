@@ -67,7 +67,7 @@ export interface AIProvider {
 }
 
 // Provider that respects per-user API keys
-class UserKeyAIProvider implements AIProvider {
+export class UserKeyAIProvider implements AIProvider {
   private globalClient: any;
   private userKeyClients = new Map<string, any>();
 

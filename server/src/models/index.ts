@@ -15,16 +15,20 @@ function wrapMethods(collName: string, schema: any) {
           lean() { return this; },
           select(_s: string) { return this; },
           populate(_s: any) { return this; },
-          async then(resolve: any) {
-            let results = await coll.find(this._q);
-            if (this._sort) {
-              const key = Object.keys(this._sort)[0];
-              const dir = this._sort[key];
-              results.sort((a: any, b: any) => (a[key] < b[key] ? -dir : a[key] > b[key] ? dir : 0));
+          async then(resolve: any, reject: any) {
+            try {
+              let results = await coll.find(this._q);
+              if (this._sort) {
+                const key = Object.keys(this._sort)[0];
+                const dir = this._sort[key];
+                results.sort((a: any, b: any) => (a[key] < b[key] ? -dir : a[key] > b[key] ? dir : 0));
+              }
+              if (this._skip) results = results.slice(this._skip);
+              if (this._lim) results = results.slice(0, this._lim);
+              resolve(results);
+            } catch (err) {
+              reject(err);
             }
-            if (this._skip) results = results.slice(this._skip);
-            if (this._lim) results = results.slice(0, this._lim);
-            resolve(results);
           },
         };
         return chain;
@@ -35,9 +39,13 @@ function wrapMethods(collName: string, schema: any) {
           select(s: string) { this._selectFields = s; return this; },
           populate(_s: any) { return this; },
           lean() { return this; },
-          async then(resolve: any) {
-            const doc = await coll.findOne(this._q);
-            resolve(doc);
+          async then(resolve: any, reject: any) {
+            try {
+              const doc = await coll.findOne(this._q);
+              resolve(doc);
+            } catch (err) {
+              reject(err);
+            }
           },
         };
         return chain;
@@ -48,9 +56,13 @@ function wrapMethods(collName: string, schema: any) {
           select(s: string) { this._selectFields = s; return this; },
           populate(_s: any) { return this; },
           lean() { return this; },
-          async then(resolve: any) {
-            const doc = await coll.findOne(this._q);
-            resolve(doc);
+          async then(resolve: any, reject: any) {
+            try {
+              const doc = await coll.findOne(this._q);
+              resolve(doc);
+            } catch (err) {
+              reject(err);
+            }
           },
         };
         return chain;
@@ -61,7 +73,7 @@ function wrapMethods(collName: string, schema: any) {
           select(_s: string) { return this; },
           populate(_s: any) { return this; },
           lean() { return this; },
-          async then(resolve: any) { resolve(await coll.findOneAndUpdate(this._q, this._u, this._o)); },
+          async then(resolve: any, reject: any) { try { resolve(await coll.findOneAndUpdate(this._q, this._u, this._o)); } catch (e) { reject(e); } },
         };
         return chain;
       },
@@ -71,7 +83,7 @@ function wrapMethods(collName: string, schema: any) {
           select(_s: string) { return this; },
           populate(_s: any) { return this; },
           lean() { return this; },
-          async then(resolve: any) { resolve(await coll.findOneAndUpdate(this._q, this._u, this._o)); },
+          async then(resolve: any, reject: any) { try { resolve(await coll.findOneAndUpdate(this._q, this._u, this._o)); } catch (e) { reject(e); } },
         };
         return chain;
       },
@@ -80,7 +92,7 @@ function wrapMethods(collName: string, schema: any) {
           _q: q,
           select(_s: string) { return this; },
           populate(_s: any) { return this; },
-          async then(resolve: any) { resolve(await coll.findOneAndDelete(this._q)); },
+          async then(resolve: any, reject: any) { try { resolve(await coll.findOneAndDelete(this._q)); } catch (e) { reject(e); } },
         };
         return chain;
       },
@@ -112,6 +124,16 @@ function wrapMethods(collName: string, schema: any) {
     findOneAndUpdate: (...a: any[]) => pick().findOneAndUpdate(...a),
     findByIdAndUpdate: (...a: any[]) => pick().findByIdAndUpdate(...a),
     findOneAndDelete: (...a: any[]) => pick().findOneAndDelete(...a),
+    // Common aliases: findByIdAndDelete(id) and deleteOne(query)
+    findByIdAndDelete: async (...a: any[]) => {
+      const id = a[0];
+      const q = typeof id === 'object' && id !== null ? id : { _id: id };
+      return pick().findOneAndDelete(q);
+    },
+    deleteOne: async (...a: any[]) => {
+      const r = await pick().findOneAndDelete(a[0]);
+      return { deletedCount: r ? 1 : 0, acknowledged: true };
+    },
     create: (...a: any[]) => pick().create(...a),
     deleteMany: (...a: any[]) => pick().deleteMany(...a),
     updateMany: (...a: any[]) => pick().updateMany(...a),

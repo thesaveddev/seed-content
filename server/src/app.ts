@@ -70,7 +70,14 @@ export function createApp(): express.Express {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   app.use(cookieParser());
-  app.use(compression());
+  // SSE streams must bypass compression — compressing/buffering them delays
+  // every event until the buffer fills or the stream ends.
+  app.use(compression({
+    filter: (req, res) =>
+      String(res.getHeader('Content-Type') || '').includes('event-stream')
+        ? false
+        : compression.filter(req, res),
+  }));
 
   app.use('/api/', rateLimit({
     windowMs: config.RATE_LIMIT_WINDOW_MS,
@@ -155,6 +162,11 @@ export function createApp(): express.Express {
 
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  // Unknown API routes answer JSON, not the SPA HTML fallback
+  app.use('/api', (_req, res) => {
+    res.status(404).json({ success: false, error: 'Not found' });
   });
 
   if (process.env.NODE_ENV === 'production') {

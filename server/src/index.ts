@@ -10,7 +10,7 @@ async function main() {
 
   await initQueue(async (data: ContentProcessingJobData) => {
     try {
-      await contentPipeline.processProject(data.projectId);
+      await contentPipeline.processProject(data.projectId, data.selectedPlatforms);
     } catch (error: any) {
       console.error(`Failed to process project ${data.projectId}:`, error.message);
     }

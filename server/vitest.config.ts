@@ -26,12 +26,15 @@ export default defineConfig({
         'src/scripts/**',
         // Legacy standalone schema — live model is defined in models/index.ts
         'src/models/Notification.ts',
+        // Standalone worker entrypoint (npm run worker): boots its own process,
+        // never imported by tests; exercised by live smoke
+        'src/workers/**',
       ],
       thresholds: {
-        statements: 61,
-        branches: 65,
-        functions: 64,
-        lines: 61,
+        statements: 91,
+        branches: 77,
+        functions: 87,
+        lines: 91,
       },
     },
   },

@@ -1,3 +1,6 @@
+// Telegram bot service - architecture ready for when token is provided
+// For MVP, this provides the interface and a webhook-based handler
+
 import { config } from '../../config/env';
 
 export interface TelegramBotConfig {
@@ -10,9 +13,6 @@ export interface TelegramMessage {
   text: string;
   replyMarkup?: any;
 }
-
-// Telegram bot service - architecture ready for when token is provided
-// For MVP, this provides the interface and a webhook-based handler
 
 export class TelegramBotService {
   private token: string;
