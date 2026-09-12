@@ -188,9 +188,9 @@ describe('Scheduler & publisher', () => {
     expect(warning.message).toMatch(/No connected telegram integration/);
   });
 
-  it('fails honestly for validate-only platforms (X) even when connected', async () => {
-    const user = await registerUser('Validate Only');
-    stubTelegramApi('ok'); // irrelevant — X connect is a format check
+  it('attempts a real X publish when connected and fails honestly when the API rejects', async () => {
+    const user = await registerUser('X Publish');
+    stubTelegramApi('ok'); // telegram stub returns 404 for non-telegram URLs
 
     await auth(user.token).post('/api/integrations/x/connect').send({
       credentials: { accessToken: 'X'.repeat(30) },
@@ -201,11 +201,49 @@ describe('Scheduler & publisher', () => {
 
     const updated = await getPost(post);
     expect(updated!.status).toBe('failed');
-    expect(updated!.errorMessage).toMatch(/validation mode|platform API credentials/i);
+    // The publisher now really calls the X API; the stub 404s it
+    expect(updated!.errorMessage).toMatch(/X rejected the post/i);
 
     const notes = await notificationsFor(user);
     const warning = notes.find((n: any) => /Post to x failed/.test(n.title));
     expect(warning).toBeTruthy();
+  });
+
+  it('publishes to X end-to-end when the API accepts the tweet', async () => {
+    const user = await registerUser('X Success');
+    const tweets: any[] = [];
+    const fetchMock = vi.fn(async (url: any, init?: any) => {
+      const u = String(url);
+      if (u.includes('api.twitter.com/2/tweets') && init?.method === 'POST') {
+        const payload = JSON.parse(init.body || '{}');
+        tweets.push(payload);
+        return mockResponse(201, { data: { id: '1234567890', text: payload.text, username: 'xuser' } });
+      }
+      if (u.includes('/getMe') || u.includes('/getChat') || u.includes('/sendMessage')) {
+        return mockResponse(200, { ok: true, result: { username: 'test_bot', message_id: 42, title: 'T' } });
+      }
+      return mockResponse(404, {});
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await auth(user.token).post('/api/integrations/x/connect').send({
+      credentials: { accessToken: 'X'.repeat(30) },
+    });
+
+    const { post } = await seedDuePost(user, 'x', new Date(Date.now() - 5000), 'My first automated tweet');
+    await scheduledPostPublisher.tick();
+
+    const updated = await getPost(post);
+    expect(updated!.status).toBe('published');
+    expect(updated!.externalUrl).toContain('x.com/xuser/status/1234567890');
+    expect(tweets.length).toBe(1);
+    expect(tweets[0].text).toMatch(/My first automated tweet/);
+
+    const notes = await notificationsFor(user);
+    const success = notes.find((n: any) => /Published to x/.test(n.title));
+    expect(success).toBeTruthy();
+
+    vi.unstubAllGlobals();
   });
 
   it('marks the post failed when the referenced generated content no longer exists', async () => {

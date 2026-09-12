@@ -152,6 +152,7 @@ export const integrations = {
     request<any>(`/integrations/${provider}/connect`, { method: 'POST', body: JSON.stringify(data) }),
   disconnect: (provider: string) =>
     request<any>(`/integrations/${provider}`, { method: 'DELETE' }),
+  oauthStartUrl: (provider: string) => `/integrations/${provider}/oauth/start`,
 };
 
 // Notifications
@@ -199,6 +200,8 @@ export const scheduler = {
     request<any>(`/scheduler/${id}`, { method: 'PUT', body: JSON.stringify({ notes }) }),
   cancel: (id: string) =>
     request<any>(`/scheduler/${id}/cancel`, { method: 'PUT' }),
+  retry: (id: string) =>
+    request<any>(`/scheduler/${id}/retry`, { method: 'PUT' }),
   markPublished: (id: string) =>
     request<any>(`/scheduler/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'published' }) }),
   delete: (id: string) =>

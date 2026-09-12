@@ -26,6 +26,21 @@ const envSchema = z.object({
   STRIPE_PRICE_AGENCY: opt(z.string()).optional(),
   TELEGRAM_BOT_TOKEN: opt(z.string()).optional(),
   ENCRYPTION_KEY: opt(z.string()).optional(),
+  // Public origin for OAuth redirects + media links (e.g. https://seed.example.com)
+  PUBLIC_BASE_URL: opt(z.string()).optional(),
+  // Secret used to sign public media URLs (falls back to JWT_SECRET)
+  MEDIA_SIGNING_SECRET: opt(z.string()).optional(),
+  // Per-provider OAuth app credentials (platform auto-publishing)
+  LINKEDIN_CLIENT_ID: opt(z.string()).optional(),
+  LINKEDIN_CLIENT_SECRET: opt(z.string()).optional(),
+  X_CLIENT_ID: opt(z.string()).optional(),
+  X_CLIENT_SECRET: opt(z.string()).optional(),
+  INSTAGRAM_CLIENT_ID: opt(z.string()).optional(),
+  INSTAGRAM_CLIENT_SECRET: opt(z.string()).optional(),
+  YOUTUBE_CLIENT_ID: opt(z.string()).optional(),
+  YOUTUBE_CLIENT_SECRET: opt(z.string()).optional(),
+  TIKTOK_CLIENT_ID: opt(z.string()).optional(),
+  TIKTOK_CLIENT_SECRET: opt(z.string()).optional(),
   RATE_LIMIT_WINDOW_MS: opt(z.coerce.number()).default(900000),
   RATE_LIMIT_MAX_REQUESTS: opt(z.coerce.number()).default(600),
   RABBITMQ_URL: opt(z.string()).default('amqp://guest:guest@localhost:5672'),

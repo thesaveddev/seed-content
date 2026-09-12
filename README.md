@@ -141,6 +141,13 @@ User uploads content
 | FRONTEND_URL | No | http://localhost:5173 | Frontend URL for CORS |
 | STRIPE_SECRET_KEY | No | - | Stripe secret key |
 | TELEGRAM_BOT_TOKEN | No | - | Telegram bot token |
+| PUBLIC_BASE_URL | No | http://localhost:3001 | Public origin for OAuth callbacks + media links |
+| MEDIA_SIGNING_SECRET | No | - | HMAC key for public media URLs (falls back to JWT_SECRET) |
+| LINKEDIN_CLIENT_ID / _SECRET | No | - | LinkedIn OAuth app (enables "Connect with LinkedIn") |
+| X_CLIENT_ID / _SECRET | No | - | X OAuth app (enables "Connect with X") |
+| INSTAGRAM_CLIENT_ID / _SECRET | No | - | Meta/Facebook OAuth app (enables "Connect with Instagram") |
+| YOUTUBE_CLIENT_ID / _SECRET | No | - | Google OAuth client (enables "Connect with YouTube") |
+| TIKTOK_CLIENT_ID / _SECRET | No | - | TikTok OAuth app (enables "Connect with TikTok") |
 | RATE_LIMIT_WINDOW_MS | No | 900000 | Rate limit window |
 | RATE_LIMIT_MAX_REQUESTS | No | 100 | Max requests per window |
 

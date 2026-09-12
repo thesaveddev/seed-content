@@ -24,6 +24,7 @@ import settingsRoutes from './routes/settings';
 import schedulerRoutes from './routes/scheduler';
 import teamRoutes from './routes/team';
 import adminRoutes from './routes/admin';
+import mediaRoutes from './routes/media';
 import { sseHandler } from './routes/events';
 
 /**
@@ -150,6 +151,7 @@ export function createApp(): express.Express {
   app.use('/api/scheduler', schedulerRoutes);
   app.use('/api/team', teamRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/media', mediaRoutes); // public, signature-gated (platform servers fetch by URL)
 
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

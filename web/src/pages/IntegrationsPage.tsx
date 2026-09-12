@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { integrations as api } from '../lib/api';
-import { Link2, Check, AlertTriangle, X, ShieldCheck, Info } from 'lucide-react';
+import { Link2, Check, AlertTriangle, X, ShieldCheck, Info, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Integration } from '../types';
 
@@ -15,6 +16,8 @@ interface FieldDef {
 
 interface ProviderConfig {
   mode: 'full' | 'validate';
+  oauth?: boolean;
+  oauthLabel?: string;
   fields: FieldDef[];
 }
 
@@ -35,8 +38,25 @@ export default function IntegrationsPage() {
   const [form, setForm] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [fieldError, setFieldError] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => { load(); }, []);
+
+  // Surface OAuth return result (the platform redirects back with ?oauth=ok|error)
+  useEffect(() => {
+    const oauthResult = searchParams.get('oauth');
+    if (!oauthResult) return;
+    const detail = searchParams.get('detail');
+    if (oauthResult === 'ok') {
+      toast.success(detail ? `Connected as ${detail}` : 'Account connected');
+    } else {
+      toast.error(detail || 'OAuth connection failed — try again');
+    }
+    searchParams.delete('oauth');
+    searchParams.delete('detail');
+    setSearchParams(searchParams, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function load() {
     try {
@@ -103,6 +123,22 @@ export default function IntegrationsPage() {
     }
   }
 
+  // OAuth: ask the server for the platform authorize URL, then redirect
+  async function handleOAuthConnect(providerId: string) {
+    try {
+      const res = await fetch(`/api${api.oauthStartUrl(providerId)}`, {
+        credentials: 'include',
+      });
+      const body = await res.json();
+      if (!res.ok || !body?.data?.url) {
+        throw new Error(body?.error || 'Could not start the OAuth flow');
+      }
+      window.location.href = body.data.url;
+    } catch (err: any) {
+      toast.error(err.message || 'OAuth is not available for this platform');
+    }
+  }
+
   function providerName(id: string) {
     return providers.find((p) => p.id === id)?.name || id;
   }
@@ -127,7 +163,8 @@ export default function IntegrationsPage() {
           {providers.map((provider) => {
             const connected = isConnected(provider.id);
             const doc = connectedDoc(provider.id);
-            const mode = providerConfigs[provider.id]?.mode;
+            const cfg = providerConfigs[provider.id];
+            const mode = cfg?.mode;
             return (
               <div key={provider.id} className="card flex items-center gap-4 p-5">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-2xl">
@@ -155,16 +192,19 @@ export default function IntegrationsPage() {
                     <p className="mt-0.5 text-xs text-ink-2">Channel: <strong>{String(doc.metadata.chatTitle)}</strong></p>
                   )}
                 </div>
-                <button
-                  onClick={() => (connected ? handleDisconnect(provider.id) : openConnect(provider.id))}
-                  className={connected ? 'btn-secondary text-sm' : 'btn-primary text-sm'}
-                >
-                  {connected ? (
-                    <><Check className="h-4 w-4" /> Connected</>
-                  ) : (
-                    <><Link2 className="h-4 w-4" /> Connect</>
-                  )}
-                </button>
+                {connected ? (
+                  <button onClick={() => handleDisconnect(provider.id)} className="btn-secondary text-sm">
+                    <Check className="h-4 w-4" /> Connected
+                  </button>
+                ) : cfg?.oauth ? (
+                  <button onClick={() => handleOAuthConnect(provider.id)} className="btn-primary text-sm">
+                    <ExternalLink className="h-4 w-4" /> Connect with {cfg.oauthLabel || provider.name}
+                  </button>
+                ) : (
+                  <button onClick={() => openConnect(provider.id)} className="btn-primary text-sm">
+                    <Link2 className="h-4 w-4" /> Connect
+                  </button>
+                )}
               </div>
             );
           })}
@@ -174,9 +214,10 @@ export default function IntegrationsPage() {
       <div className="card p-6 bg-paper-2">
         <p className="text-sm text-ink-2">
           <strong>How publishing works:</strong> Telegram posts go out fully automatically when their schedule
-          time arrives. LinkedIn, X, Instagram, TikTok and YouTube connections verify your account and keep your
-          tokens ready — scheduled posts for those platforms notify you with the finished content ready to paste,
-          until platform app credentials are configured on this deployment.
+          time arrives. Where "Connect with …" appears, one click links your account through the platform's own
+          login and scheduled posts publish automatically. Platforms without OAuth configured yet fall back to
+          credential paste-in — tokens are stored encrypted and publishing activates as each platform's app
+          approval lands on this deployment.
         </p>
       </div>
 

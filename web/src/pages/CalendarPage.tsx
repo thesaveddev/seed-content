@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Calendar as CalendarIcon,
-  Clock, Eye, XCircle, ExternalLink, Filter, Plus
+  Clock, Eye, XCircle, ExternalLink, Filter, Plus, RotateCcw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { scheduler, content as contentApi } from '../lib/api';
@@ -168,6 +168,17 @@ export default function CalendarPage() {
       fetchPosts();
       setShowDetail(false);
     } catch {}
+  };
+
+  const handleRetry = async (id: string) => {
+    try {
+      await scheduler.retry(id);
+      toast.success('Retrying now — the post will publish or fail again shortly');
+      fetchPosts();
+      setShowDetail(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Could not retry the post');
+    }
   };
 
   // ── Add-entry flow ──
@@ -740,6 +751,34 @@ export default function CalendarPage() {
                 <ExternalLink style={{ width: 14, height: 14 }} />
                 View content
               </button>
+            )}
+            {selectedPost.status === 'failed' && (
+              <button
+                onClick={() => handleRetry(selectedPost._id)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: 'var(--color-accent)',
+                  color: 'var(--color-accent-ink)',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                }}
+              >
+                <RotateCcw style={{ width: 14, height: 14 }} />
+                Retry publish
+              </button>
+            )}
+            {selectedPost.errorMessage && selectedPost.status === 'failed' && (
+              <p style={{ fontSize: '0.75rem', lineHeight: 1.5, color: 'oklch(50% 0.16 25)', margin: 0 }}>
+                Last error: {selectedPost.errorMessage}
+              </p>
             )}
             {selectedPost.status === 'scheduled' && (
               <>

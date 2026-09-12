@@ -128,6 +128,49 @@ router.put('/:id', authenticate, requireWorkspace, async (req: AuthRequest, res:
   }
 });
 
+// PUT /api/scheduler/:id/retry — retry a failed post immediately
+router.put('/:id/retry', authenticate, requireWorkspace, async (req: AuthRequest, res: Response) => {
+  try {
+    const post = await ScheduledPost.findOne({
+      _id: req.params.id,
+      workspaceId: req.workspaceId,
+      status: 'failed',
+    });
+    if (!post) {
+      res.status(404).json({ success: false, error: 'Failed post not found (only failed posts can be retried)' });
+      return;
+    }
+
+    // Re-claim and publish now
+    const claimed = await ScheduledPost.findOneAndUpdate(
+      { _id: post._id, status: 'failed' },
+      { $set: { status: 'publishing', errorMessage: null } },
+      { new: true }
+    );
+    if (!claimed) {
+      res.status(409).json({ success: false, error: 'Post was already retried' });
+      return;
+    }
+
+    // Publish asynchronously — respond immediately so the UI can show "retrying"
+    void (async () => {
+      try {
+        const { publishScheduledPost } = await import('../services/publisher');
+        await publishScheduledPost(claimed);
+      } catch (err: any) {
+        await ScheduledPost.findByIdAndUpdate(claimed!._id, {
+          status: 'failed',
+          errorMessage: err?.message || 'Retry failed',
+        }).catch(() => {});
+      }
+    })();
+
+    res.json({ success: true, data: { ...claimed.toObject(), status: 'publishing' } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // PUT /api/scheduler/:id/cancel — cancel a scheduled post
 router.put('/:id/cancel', authenticate, requireWorkspace, async (req: AuthRequest, res: Response) => {
   try {

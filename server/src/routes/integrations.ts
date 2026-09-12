@@ -3,6 +3,8 @@ import { authenticate, requireWorkspace } from '../middleware/auth';
 import { Integration } from '../models';
 import { AuthRequest } from '../types';
 import { encryptCredentials, maskSecret } from '../services/crypto/secrets';
+import { OAUTH_PROVIDERS, isOAuthConfigured, buildAuthorizeUrl, exchangeCode } from '../services/oauth';
+import { config } from '../config/env';
 
 const router = Router();
 
@@ -259,6 +261,8 @@ router.get('/', authenticate, requireWorkspace, async (req: AuthRequest, res: Re
           id,
           {
             mode: def.mode,
+            oauth: isOAuthConfigured(id),
+            oauthLabel: OAUTH_PROVIDERS[id]?.label || def.name,
             fields: def.fields.map((f) => ({
               key: f.key,
               label: f.label,
@@ -338,6 +342,58 @@ router.post('/:provider/connect', authenticate, requireWorkspace, async (req: Au
     res.json({ success: true, data: publicIntegration(integration), message: result.detail });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ── GET /api/integrations/:provider/oauth/start — begin OAuth ────
+// Returns the platform's authorize URL; the frontend redirects to it.
+router.get('/:provider/oauth/start', authenticate, requireWorkspace, async (req: AuthRequest, res: Response) => {
+  try {
+    const { url, error } = buildAuthorizeUrl(req.params.provider, String(req.workspaceId || ''), String(req.userId || ''));
+    if (error) {
+      res.status(400).json({ success: false, error });
+      return;
+    }
+    res.json({ success: true, data: { url } });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ── GET /api/integrations/:provider/oauth/callback — platform pings us
+// Exchanges the code, stores the integration, then redirects the user's
+// browser back to the frontend with a success/error flag.
+router.get('/:provider/oauth/callback', async (req: AuthRequest, res: Response) => {
+  try {
+    const provider = req.params.provider;
+    const code = String(req.query.code || '');
+    const state = String(req.query.state || '');
+    const frontend = (req.query.frontend as string) || undefined;
+    const cfgErr = String(req.query.error_description || req.query.error || '');
+
+    const back = (status: 'ok' | 'error', detail?: string) => {
+      let target = `${config.FRONTEND_URL}/integrations?oauth=${status}`;
+      if (detail) target += `&detail=${encodeURIComponent(detail.slice(0, 160))}`;
+      res.redirect(target);
+    };
+
+    if (cfgErr) {
+      back('error', cfgErr);
+      return;
+    }
+    if (!code || !state) {
+      back('error', 'Missing code or state');
+      return;
+    }
+
+    const outcome = await exchangeCode(provider, code, state);
+    if (!outcome.ok) {
+      back('error', outcome.error);
+      return;
+    }
+    back('ok', outcome.accountName);
+  } catch (error: any) {
+    res.redirect(`${config.FRONTEND_URL}/integrations?oauth=error&detail=${encodeURIComponent(error?.message || 'OAuth callback failed')}`);
   }
 });
 
