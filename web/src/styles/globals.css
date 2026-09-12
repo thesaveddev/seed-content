@@ -1,0 +1,260 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Geist+Mono:wght@100..900&display=swap');
+
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hallmark · genre: editorial · design-system: design.md · designed-as-app */
+
+@layer base {
+  *, *::before, *::after {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    overflow-x: clip;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "cv13";
+  }
+
+  ::selection {
+    background-color: oklch(52% 0.18 270 / 0.2);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+  }
+
+  /* Rhythm: hairline rules, not card borders */
+  hr {
+    border: none;
+    height: var(--rule-width);
+    background: var(--rule-color);
+    margin: var(--space-2xl) 0;
+  }
+
+  /* Links */
+  a {
+    color: var(--color-accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    transition: color var(--dur-short) var(--ease-out);
+  }
+  a:hover {
+    color: oklch(47% 0.20 270);
+  }
+}
+
+@layer components {
+  /* ── Buttons ── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-[family-name:var(--font-display)] font-semibold transition-all;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    cursor: pointer;
+    border: var(--rule-width) solid transparent;
+    text-decoration: none;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn;
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+    border-color: var(--color-accent);
+  }
+  .btn-primary:hover {
+    background: oklch(47% 0.20 270);
+    border-color: oklch(47% 0.20 270);
+  }
+
+  .btn-secondary {
+    @apply btn;
+    background: transparent;
+    color: var(--color-ink);
+    border-color: var(--color-rule);
+  }
+  .btn-secondary:hover {
+    background: var(--color-paper-2);
+    border-color: var(--color-ink-2);
+  }
+
+  .btn-ghost {
+    @apply btn;
+    background: transparent;
+    color: var(--color-ink-2);
+    border-color: transparent;
+    padding: 0.5rem 0.75rem;
+  }
+  .btn-ghost:hover {
+    background: var(--color-paper-2);
+    color: var(--color-ink);
+  }
+
+  .btn-danger {
+    @apply btn;
+    background: var(--color-error);
+    color: white;
+    border-color: var(--color-error);
+  }
+  .btn-danger:hover {
+    background: oklch(48% 0.18 25);
+  }
+
+  /* ── Cards — hairline rules, not heavy borders ── */
+  .card {
+    background: var(--color-paper);
+    border: var(--rule-width) solid var(--color-rule);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+  }
+
+  /* ── Inputs ── */
+  .input {
+    @apply w-full font-[family-name:var(--font-body)] text-sm;
+    padding: 0.625rem 0.875rem;
+    border: var(--rule-width) solid var(--color-rule);
+    border-radius: var(--radius-md);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    transition: border-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out);
+  }
+  .input::placeholder {
+    color: var(--color-muted);
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px oklch(52% 0.18 270 / 0.12);
+  }
+
+  .label {
+    @apply block text-sm font-medium;
+    color: var(--color-ink-2);
+    margin-bottom: 0.375rem;
+    font-family: var(--font-display);
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Badges ── */
+  .badge {
+    @apply inline-flex items-center;
+    padding: 0.125rem 0.625rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: var(--font-display);
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar-link {
+    @apply flex items-center gap-3 font-[family-name:var(--font-display)] font-medium transition-colors;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-md);
+    font-size: 0.9375rem;
+    color: var(--color-ink-2);
+    text-decoration: none;
+  }
+  .sidebar-link:hover {
+    background: var(--color-paper-2);
+    color: var(--color-ink);
+  }
+
+  .sidebar-link-active {
+    background: var(--color-paper-2);
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+  .sidebar-link-active:hover {
+    background: var(--color-paper-2);
+  }
+
+  /* ── Section rhythm ── */
+  .section-rule {
+    border: none;
+    height: var(--rule-width);
+    background: var(--color-rule);
+  }
+
+  /* ── Measure constraint ── */
+  .measure {
+    max-width: var(--measure);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-rule);
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s var(--ease-out) both;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.5s var(--ease-out) both;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

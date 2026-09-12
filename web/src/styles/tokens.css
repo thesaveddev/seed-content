@@ -1,0 +1,108 @@
+/* Hallmark · genre: editorial · vibe: "editorial precision, indigo ink, no varnish"
+ * paper: oklch(97% 0.010 270) · accent: oklch(52% 0.18 270)
+ * display: Newsreader · body: Source Serif 4 · axes: light / roman-serif / cool
+ * studied: no · context: explicit · designed-as-app
+ */
+
+:root {
+  /* ── Colour — indigo/purple palette ── */
+  --color-paper:      oklch(97% 0.010 270);
+  --color-paper-2:    oklch(94% 0.012 270);
+  --color-paper-3:    oklch(91% 0.014 270);
+  --color-ink:        oklch(18% 0.014 270);
+  --color-ink-2:      oklch(36% 0.012 270);
+  --color-rule:       oklch(84% 0.012 270);
+  --color-rule-2:     oklch(88% 0.010 270);
+  --color-muted:      oklch(50% 0.010 270);
+  --color-accent:     oklch(52% 0.18 270);
+  --color-accent-ink: oklch(97% 0.010 270);
+  --color-focus:      oklch(50% 0.22 270);
+
+  /* Semantic aliases */
+  --color-success:    oklch(62% 0.14 155);
+  --color-error:      oklch(55% 0.18 25);
+  --color-warning:    oklch(75% 0.14 75);
+  --color-info:       oklch(60% 0.14 270);
+
+  /* ── Typography ── */
+  --font-display: "Newsreader", ui-serif, Georgia, "Cambria", serif;
+  --font-body:    "Source Serif 4", ui-serif, Georgia, "Cambria", serif;
+  --font-mono:    "Geist Mono", ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  --font-ui:      "Source Serif 4", ui-serif, Georgia, serif;
+
+  /* ── Type scale (major third 1.25) ── */
+  --text-xs:    0.64rem;
+  --text-sm:    0.8rem;
+  --text-base:  1rem;
+  --text-md:    1.25rem;
+  --text-lg:    1.5625rem;
+  --text-xl:    1.9531rem;
+  --text-2xl:   2.4414rem;
+  --text-3xl:   3.0518rem;
+  --text-4xl:   3.8147rem;
+  --text-display: clamp(2.75rem, 5vw + 1rem, 5.25rem);
+
+  /* ── Spacing (4pt scale) ── */
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs:  0.5rem;
+  --space-sm:  0.75rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  --space-4xl: 6rem;
+
+  /* ── Motion ── */
+  --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:      cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out:  cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-short:    150ms;
+  --dur-medium:   250ms;
+  --dur-long:     400ms;
+
+  /* ── Radius ── */
+  --radius-sm:  4px;
+  --radius-md:  6px;
+  --radius-lg:  8px;
+  --radius-xl:  12px;
+  --radius-pill: 9999px;
+
+  /* ── Rules ── */
+  --rule-width: 1px;
+  --rule-color: var(--color-rule);
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 2px oklch(18% 0.014 270 / 0.06);
+  --shadow-md: 0 2px 8px oklch(18% 0.014 270 / 0.08);
+  --shadow-lg: 0 4px 16px oklch(18% 0.014 270 / 0.10);
+
+  /* ── Layout ── */
+  --measure: 65ch;
+  --sidebar-width: 260px;
+}
+
+/* ── Dark mode ── */
+[data-theme="dark"] {
+  --color-paper:      oklch(16% 0.014 270);
+  --color-paper-2:    oklch(20% 0.016 270);
+  --color-paper-3:    oklch(24% 0.018 270);
+  --color-ink:        oklch(93% 0.010 270);
+  --color-ink-2:      oklch(78% 0.010 270);
+  --color-rule:       oklch(28% 0.016 270);
+  --color-rule-2:     oklch(24% 0.014 270);
+  --color-muted:      oklch(55% 0.010 270);
+  --color-accent:     oklch(62% 0.18 270);
+  --color-accent-ink: oklch(12% 0.014 270);
+  --color-focus:      oklch(62% 0.22 270);
+
+  --color-success:    oklch(68% 0.14 155);
+  --color-error:      oklch(62% 0.18 25);
+  --color-warning:    oklch(78% 0.14 75);
+  --color-info:       oklch(65% 0.14 270);
+
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.20);
+  --shadow-md: 0 2px 8px oklch(0% 0 0 / 0.25);
+  --shadow-lg: 0 4px 16px oklch(0% 0 0 / 0.30);
+}
