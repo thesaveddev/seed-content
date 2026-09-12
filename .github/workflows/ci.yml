@@ -8,7 +8,7 @@ on:
 
 jobs:
   server:
-    name: Server — typecheck & build
+    name: Server — typecheck, test, build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,14 +25,22 @@ jobs:
       - name: Typecheck
         run: cd server && npm run typecheck
 
-      - name: Test
-        run: cd server && npm test
+      - name: Test with coverage
+        run: cd server && npm run test:coverage
+
+      - name: Upload server coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-coverage
+          path: server/coverage/
+          retention-days: 14
 
       - name: Build
         run: cd server && npm run build
 
   web:
-    name: Web — typecheck & build
+    name: Web — typecheck, test, build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,8 +57,16 @@ jobs:
       - name: Typecheck
         run: cd web && npm run typecheck
 
-      - name: Test
-        run: cd web && npm test
+      - name: Test with coverage
+        run: cd web && npm run test:coverage
+
+      - name: Upload web coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-coverage
+          path: web/coverage/
+          retention-days: 14
 
       - name: Build
         run: cd web && npm run build

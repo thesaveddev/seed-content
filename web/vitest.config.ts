@@ -14,6 +14,26 @@ export default defineConfig({
     fileParallelism: false,
     pool: 'forks',
     poolOptions: { forks: { singleFork: true } },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      reportsDirectory: './coverage',
+      include: ['src/**'],
+      exclude: [
+        'src/test/**',
+        'src/**/*.test.{ts,tsx}',
+        // App bootstrap — exercised by e2e/browser, not unit tests
+        'src/main.tsx',
+      ],
+      // Ratchet thresholds: floor is set just under current coverage.
+      // It may only go up — add tests with every new feature.
+      thresholds: {
+        statements: 5,
+        branches: 30,
+        functions: 15,
+        lines: 5,
+      },
+    },
   },
   resolve: {
     alias: {
