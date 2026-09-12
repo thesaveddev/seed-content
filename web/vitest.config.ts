@@ -27,11 +27,12 @@ export default defineConfig({
       ],
       // Ratchet thresholds: floor is set just under current coverage.
       // It may only go up — add tests with every new feature.
+      // Last measured: 23.95% stmts / 74.85% branches / 43.02% funcs
       thresholds: {
-        statements: 5,
-        branches: 30,
-        functions: 15,
-        lines: 5,
+        statements: 21,
+        branches: 70,
+        functions: 39,
+        lines: 21,
       },
     },
   },
