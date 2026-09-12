@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, afterAll } from 'vitest';
 import { initQueue, addContentProcessingJob } from '../services/queue';
 import { contentQueue } from '../services/queue/inprocess';
 import { storage } from '../services/storage';
@@ -160,15 +160,39 @@ describe('email service', () => {
 });
 
 describe('whisper transcription provider', () => {
+  const tempDirs: string[] = [];
+
+  async function makeTempClip(): Promise<string> {
+    // Real temp file — but do NOT delete it inside the test: the mocked
+    // create() resolves before fs.createReadStream actually opens the file,
+    // and an early rm would surface as an uncaught ENOENT after the test.
+    const { mkdtempSync, writeFileSync } = await import('fs');
+    const { join } = await import('path');
+    const { tmpdir } = await import('os');
+    const dir = mkdtempSync(join(tmpdir(), 'whisper-'));
+    tempDirs.push(dir);
+    const filePath = join(dir, 'clip.mp3');
+    writeFileSync(filePath, 'fake audio');
+    return filePath;
+  }
+
   beforeEach(() => {
     whisperCreate.mockReset();
+  });
+
+  afterAll(async () => {
+    // Give any lazily-opened stream a beat, then clean up
+    await new Promise((r) => setTimeout(r, 250));
+    const { rmSync } = await import('fs');
+    for (const dir of tempDirs) rmSync(dir, { recursive: true, force: true });
   });
 
   it('surfaces API errors as thrown errors', async () => {
     const provider = new WhisperTranscriptionProvider();
     whisperCreate.mockRejectedValue(new Error('Whisper rejected the request: 401 bad key'));
+    const filePath = await makeTempClip();
     await expect(
-      provider.transcribe({ filePath: '/nonexistent/file.mp3' })
+      provider.transcribe({ filePath })
     ).rejects.toThrow(/bad key|401|Whisper/i);
     expect(whisperCreate).toHaveBeenCalledWith(expect.objectContaining({ model: 'whisper-1' }));
   });
@@ -181,7 +205,8 @@ describe('whisper transcription provider', () => {
       duration: 5,
       segments: [{ start: 0, end: 5, text: 'hello world' }],
     });
-    const result = await provider.transcribe({ filePath: '/tmp/fake.mp3' });
+    const filePath = await makeTempClip();
+    const result = await provider.transcribe({ filePath });
     expect(result.transcript).toBe('hello world');
     expect(result.language).toBe('en');
     expect(result.segments?.[0].text).toBe('hello world');
